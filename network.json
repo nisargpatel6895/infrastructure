@@ -1,0 +1,144 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {},
+    "Parameters": {
+      "WebappVpcCidr": {
+        "Description": "Choose Cidr for Vpc",
+        "Type": "String",
+        "Default": "10.23.0.0/16"
+      },
+      "Subnet1Cidr": {
+        "Description": "Choose Cidr for Subnet1",
+        "Type": "String",
+        "Default": "10.23.1.0/24"
+      },
+      "Subnet2Cidr": {
+        "Description": "Choose Cidr for Subnet2",
+        "Type": "String",
+        "Default": "10.23.2.0/24"
+      },
+      "Subnet3Cidr": {
+        "Description": "Choose Cidr for Subnet3",
+        "Type": "String",
+        "Default": "10.23.3.0/24"
+      },
+      "Subnet1AZs": {
+        "Description": "Choose AZ for Subnet1",
+        "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "Subnet2AZs": {
+        "Description": "Choose AZ for Subnet2",
+        "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "Subnet3AZs": {
+        "Description": "Choose AZ for Subnet3",
+        "Type": "AWS::EC2::AvailabilityZone::Name"
+      }
+    },
+    "Mappings": {},
+    "Conditions": {},
+    "Resources": {
+      "WebappVpc": {
+        "Type": "AWS::EC2::VPC",
+        "Properties": {
+          "CidrBlock": {
+            "Ref": "WebappVpcCidr"
+          },
+          "InstanceTenancy": "default",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "WebappVpc"
+            }
+          ]
+        }
+      },
+      "Subnet1": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "MapPublicIpOnLaunch": true,
+          "AvailabilityZone": {
+            "Ref": "Subnet1AZs"
+          },
+          "VpcId": {
+            "Ref": "WebappVpc"
+          },
+          "CidrBlock": {
+            "Ref": "Subnet1Cidr"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Subnet1"
+            }
+          ]
+        }
+      },
+      "Subnet2": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "MapPublicIpOnLaunch": true,
+          "AvailabilityZone": {
+            "Ref": "Subnet2AZs"
+          },
+          "VpcId": {
+            "Ref": "WebappVpc"
+          },
+          "CidrBlock": {
+            "Ref": "Subnet2Cidr"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Subnet2"
+            }
+          ]
+        }
+      },
+      "Subnet3": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "MapPublicIpOnLaunch": true,
+          "AvailabilityZone": {
+            "Ref": "Subnet3AZs"
+          },
+          "VpcId": {
+            "Ref": "WebappVpc"
+          },
+          "CidrBlock": {
+            "Ref": "Subnet3Cidr"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Subnet3"
+            }
+          ]
+        }
+      },
+      "WebappIGW": {
+        "Type": "AWS::EC2::InternetGateway",
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "WebappIGW"
+            }
+          ]
+        }
+      },
+      "AttachGateway": {
+        "Type": "AWS::EC2::VPCGatewayAttachment",
+        "Properties": {
+          "VpcId": {
+            "Ref": "WebappVpc"
+          },
+          "InternetGatewayId": {
+            "Ref": "WebappIGW"
+          }
+        }
+      }
+    },
+    "Outputs": {}
+  }
