@@ -1,144 +1,306 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "",
-    "Metadata": {},
+    "Description": "Launch EC2 - CSYE 6225 Spring 2020",
     "Parameters": {
-      "WebappVpcCidr": {
-        "Description": "Choose Cidr for Vpc",
-        "Type": "String",
-        "Default": "10.23.0.0/16"
-      },
-      "Subnet1Cidr": {
-        "Description": "Choose Cidr for Subnet1",
-        "Type": "String",
-        "Default": "10.23.1.0/24"
-      },
-      "Subnet2Cidr": {
-        "Description": "Choose Cidr for Subnet2",
-        "Type": "String",
-        "Default": "10.23.2.0/24"
-      },
-      "Subnet3Cidr": {
-        "Description": "Choose Cidr for Subnet3",
-        "Type": "String",
-        "Default": "10.23.3.0/24"
-      },
-      "Subnet1AZs": {
-        "Description": "Choose AZ for Subnet1",
-        "Type": "AWS::EC2::AvailabilityZone::Name"
-      },
-      "Subnet2AZs": {
-        "Description": "Choose AZ for Subnet2",
-        "Type": "AWS::EC2::AvailabilityZone::Name"
-      },
-      "Subnet3AZs": {
-        "Description": "Choose AZ for Subnet3",
-        "Type": "AWS::EC2::AvailabilityZone::Name"
-      }
+        "InstanceTypeParameter": {
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t2.micro",
+                "m1.small",
+                "m1.large"
+            ],
+            "Description": "Enter t2.micro, m1.small, or m1.large. Default is t2.micro."
+        },
+        "SSHLocation": {
+            "Description": "The IP address range that can be used to SSH to the EC2 instances",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "VPCCidrBlock": {
+            "Description": "10.0.0.0/16 ---- total 65334 ips",
+            "Type": "String",
+            "Default": "10.0.0.0/16",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "VPCName": {
+            "Type": "String"
+        },
+        "AvailabilityZone1": {
+            "Type": "String",
+            "Default": "a"
+        },
+        "AvailabilityZone2": {
+            "Type": "String",
+            "Default": "e"
+        },
+        "AvailabilityZone3": {
+            "Type": "String",
+            "Default": "c"
+        },
+        "SSHKeyPair": {
+            "Type": "String",
+            "Default": "aws"
+        },
+        "PublicSubnetCidrBlock1": {
+            "Type": "String",
+            "Default": "10.0.1.0/24",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "PublicSubnetCidrBlock2": {
+            "Type": "String",
+            "Default": "10.0.2.0/24",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "PublicSubnetCidrBlock3": {
+            "Type": "String",
+            "Default": "10.0.3.0/24",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        }
     },
-    "Mappings": {},
-    "Conditions": {},
     "Resources": {
-      "WebappVpc": {
-        "Type": "AWS::EC2::VPC",
-        "Properties": {
-          "CidrBlock": {
-            "Ref": "WebappVpcCidr"
-          },
-          "InstanceTenancy": "default",
-          "Tags": [
-            {
-              "Key": "Name",
-              "Value": "WebappVpc"
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-07ebfd5b3428b6f4d",
+                "InstanceType": {
+                    "Ref": "InstanceTypeParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "InstanceSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "SSHKeyPair"
+                }
             }
-          ]
-        }
-      },
-      "Subnet1": {
-        "Type": "AWS::EC2::Subnet",
-        "Properties": {
-          "MapPublicIpOnLaunch": true,
-          "AvailabilityZone": {
-            "Ref": "Subnet1AZs"
-          },
-          "VpcId": {
-            "Ref": "WebappVpc"
-          },
-          "CidrBlock": {
-            "Ref": "Subnet1Cidr"
-          },
-          "Tags": [
-            {
-              "Key": "Name",
-              "Value": "Subnet1"
+        },
+        "InstanceSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable SSH access via port 22",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        }
+                    }
+                ]
             }
-          ]
-        }
-      },
-      "Subnet2": {
-        "Type": "AWS::EC2::Subnet",
-        "Properties": {
-          "MapPublicIpOnLaunch": true,
-          "AvailabilityZone": {
-            "Ref": "Subnet2AZs"
-          },
-          "VpcId": {
-            "Ref": "WebappVpc"
-          },
-          "CidrBlock": {
-            "Ref": "Subnet2Cidr"
-          },
-          "Tags": [
-            {
-              "Key": "Name",
-              "Value": "Subnet2"
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "CidrBlock": {
+                    "Ref": "VPCCidrBlock"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "VPCName"
+                        }
+                    }
+                ]
             }
-          ]
-        }
-      },
-      "Subnet3": {
-        "Type": "AWS::EC2::Subnet",
-        "Properties": {
-          "MapPublicIpOnLaunch": true,
-          "AvailabilityZone": {
-            "Ref": "Subnet3AZs"
-          },
-          "VpcId": {
-            "Ref": "WebappVpc"
-          },
-          "CidrBlock": {
-            "Ref": "Subnet3Cidr"
-          },
-          "Tags": [
-            {
-              "Key": "Name",
-              "Value": "Subnet3"
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnetCidrBlock1"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone1"
+                }
             }
-          ]
-        }
-      },
-      "WebappIGW": {
-        "Type": "AWS::EC2::InternetGateway",
-        "Properties": {
-          "Tags": [
-            {
-              "Key": "Name",
-              "Value": "WebappIGW"
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnetCidrBlock2"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone2"
+                }
             }
-          ]
+        },
+        "PublicSubnet3": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnetCidrBlock3"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone3"
+                }
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "VPCName"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "VPCName"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "Route": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "Subnet1RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                }
+            }
+        },
+        "Subnet2RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                }
+            }
+        },
+        "Subnet3RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet3"
+                }
+            }
         }
-      },
-      "AttachGateway": {
-        "Type": "AWS::EC2::VPCGatewayAttachment",
-        "Properties": {
-          "VpcId": {
-            "Ref": "WebappVpc"
-          },
-          "InternetGatewayId": {
-            "Ref": "WebappIGW"
-          }
-        }
-      }
     },
-    "Outputs": {}
-  }
+    "Outputs": {
+        "InstanceId": {
+            "Description": "InstanceId of the newly created EC2 instance",
+            "Value": {
+                "Ref": "EC2Instance"
+            }
+        },
+        "AZ": {
+            "Description": "Availability Zone of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EC2Instance",
+                    "AvailabilityZone"
+                ]
+            }
+        },
+        "PublicDNS": {
+            "Description": "Public DNSName of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EC2Instance",
+                    "PublicDnsName"
+                ]
+            }
+        },
+        "PublicIP": {
+            "Description": "Public IP address of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EC2Instance",
+                    "PublicIp"
+                ]
+            }
+        }
+    }
+}
