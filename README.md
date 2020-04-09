@@ -24,3 +24,6 @@
 
 - To delete this stack :
 aws cloudformation delete-stack --region us-east-1 --stack-name stackname
+
+- To import certificate :
+aws acm import-certificate --profile prod --certificate file://certificate_crt.pem --certificate-chain file://certificate_bundle.pem --private-key file://certificate_key.pem
