@@ -749,6 +749,14 @@
               }]
           }
       },
+      "DbParameterGroup":{
+        "Type" : "AWS::RDS::DBParameterGroup",
+        "Properties" : {
+            "Description" : "DB Parameter Group",
+            "Family" : "mysql8.0",
+            "Parameters" : {"performance_schema": true}
+        }
+    },
       "MyDB": {
         "Type": "AWS::RDS::DBInstance",
         "Properties": {
@@ -774,6 +782,10 @@
             },
             "Port": {
                 "Ref": "TcpPort"
+            },
+            "StorageEncrypted": "true",
+            "DBParameterGroupName": {
+                "Ref": "DbParameterGroup"
             },
             "DBSubnetGroupName":{
                 "Ref": "RDSInstanceSubnetGroup"
